@@ -1,0 +1,125 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ali-khallad\n"
+"POT-Creation-Date: 2019-09-28 15:11+0100\n"
+"PO-Revision-Date: 2019-09-28 15:08+0100\n"
+"Last-Translator: \n"
+"Language-Team: Ali Khallad\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.3\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: includes/class-ali-khallad.php:104 includes/class-ali-khallad.php:123
+msgid "Authors"
+msgstr ""
+
+#: includes/class-ali-khallad.php:105
+msgid "Parent Author"
+msgstr ""
+
+#: includes/class-ali-khallad.php:106
+msgid "All Authors"
+msgstr ""
+
+#: includes/class-ali-khallad.php:107
+msgid "View Author"
+msgstr ""
+
+#: includes/class-ali-khallad.php:108
+msgid "Add New Author"
+msgstr ""
+
+#: includes/class-ali-khallad.php:109
+msgid "Add New"
+msgstr ""
+
+#: includes/class-ali-khallad.php:110
+msgid "Edit Author"
+msgstr ""
+
+#: includes/class-ali-khallad.php:111
+msgid "Update Author"
+msgstr ""
+
+#: includes/class-ali-khallad.php:112
+msgid "Search Author"
+msgstr ""
+
+#: includes/class-ali-khallad.php:113
+msgid "Author Not Found"
+msgstr ""
+
+#: includes/class-ali-khallad.php:114
+msgid "Author Not found in Trash"
+msgstr ""
+
+#: includes/class-ali-khallad.php:115
+msgid "Author's image"
+msgstr ""
+
+#: includes/class-ali-khallad.php:116
+msgid "Set author's image"
+msgstr ""
+
+#: includes/class-ali-khallad.php:124
+msgid "Toptal's Authors"
+msgstr ""
+
+#: includes/class-ali-khallad.php:165
+msgid "Author Details"
+msgstr ""
+
+#: includes/class-ali-khallad.php:166
+msgid "Author Gallery"
+msgstr ""
+
+#: includes/class-ali-khallad.php:189
+msgid "First Name"
+msgstr ""
+
+#: includes/class-ali-khallad.php:196
+msgid "Last Name"
+msgstr ""
+
+#: includes/class-ali-khallad.php:203
+msgid "Biography"
+msgstr ""
+
+#: includes/class-ali-khallad.php:210
+msgid "Facebook URL"
+msgstr ""
+
+#: includes/class-ali-khallad.php:217
+msgid "Linkedin URL"
+msgstr ""
+
+#: includes/class-ali-khallad.php:224
+msgid "Google+ URL"
+msgstr ""
+
+#: includes/class-ali-khallad.php:287
+msgid "Manage gallery"
+msgstr ""
+
+#: includes/class-ali-khallad.php:288
+msgid "Clear gallery"
+msgstr ""
+
+#: includes/class-ali-khallad.php:377
+msgid "Author"
+msgstr ""
+
+#: includes/templates/single-authors.php:69
+msgid "Gallery"
+msgstr ""
+
+#: includes/templates/single-authors.php:100
+msgid "Contributions"
+msgstr ""
