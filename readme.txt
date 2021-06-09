@@ -16,19 +16,23 @@ This plugin provides seamless registration option for your guest customers. When
 
 The plugin will automatically create a user account from the guest details, generate a password for them, logging them in. Moreover, it will trigger a 'new-account' email, and redirect the user to their dashboard.
 
+= How to use =
+
+- Install the plugin and activate it
+- Head to WooCommerce settings from WP admin dashboard
+- Open the "Accounts & Privacy" tab
+- Find and check the "Post-checkout registration" option
+- Save changes
+
 = Development =
 
 If you'd like to view the source code and contribute to this plugin, check out the plugin's [github repo](https://github.com/bomsn/wc-post-checkout-registration).
 
 == Screenshots ==
 
-1. Mega Forms Drag & Drop forms builder
-2. Creating form
-3. Editing field
-4. Adding a container
-5. Columns
-6. Form settings
-7. Email settings
+1. Settings
+2. Order Received Page
+3. Account Page
 
 == Changelog ==
 
