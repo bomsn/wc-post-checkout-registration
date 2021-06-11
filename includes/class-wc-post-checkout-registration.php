@@ -7,7 +7,7 @@ if (!class_exists('Run_WC_PCR')) {
 	class Run_WC_PCR
 	{
 
-		public $version = '1.0.0';
+		public $version = '1.0.1';
 		public function __construct()
 		{
 			$this->load_dependencies();
