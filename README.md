@@ -15,3 +15,8 @@ The plugin will automatically create a user account from the guest details, gene
 
 ##### 1.0.0 
 * First release
+##### 1.0.1
+* Added shortcode `[wc_pcr_message]` to allow displaying prompt on custom checkout page
+* Added options to change prompt message text.
+* Link order to existing account even after the user moves outside the login page and sign in later within 6 hours
+* Clean-up

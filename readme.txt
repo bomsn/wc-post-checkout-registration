@@ -34,7 +34,23 @@ If you'd like to view the source code and contribute to this plugin, check out t
 2. Order Received Page
 3. Account Page
 
+== Frequently Asked Questions ==
+
+= Can I change the prompt message? =
+
+Yes, you can. You have the option to set your own message in WC account settings.
+
+= What if I'm using a custom thank you page? =
+
+That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt to appear.
+
 == Changelog ==
 
 = 1.0.0 =
 * First release
+
+= 1.0.1 =
+* Added shortcode `[wc_pcr_message]` to allow displaying prompt on custom checkout page
+* Added options to change prompt message text.
+* Link order to existing account even after the user moves outside the login page and sign in later within 6 hours
+* Clean-up

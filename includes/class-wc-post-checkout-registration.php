@@ -34,15 +34,11 @@ if (!class_exists('Run_WC_PCR')) {
 		private function define_hooks()
 		{
 
-			# Scripts and styles hooks
-			add_action('wp_enqueue_scripts', array($this, 'enqueue_styles_public'));
-			add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts_public'));
-
 			# Load translations
 			add_action('plugins_loaded', array($this, 'load_textdomain'));
 
 			# General hooks
-			add_filter('woocommerce_account_settings', array($this, 'add_pcr_enable_field'));
+			add_filter('woocommerce_account_settings', array($this, 'add_pcr_enable_fields'));
 
 			if (get_option('woocommerce_enable_post_checkout_registration', false)) {
 
@@ -52,6 +48,8 @@ if (!class_exists('Run_WC_PCR')) {
 
 				// if the registration link is clicked, validate and register the customer
 				add_action('template_redirect', array($this, 'maybe_register_new_customer'));
+				// Store order ID and token so it's linked to the user account after login
+				add_action('template_redirect', array($this, 'maybe_store_order_data'));
 
 				// add login form fields to indicate when we should link previous orders
 				add_action('woocommerce_login_form', array($this, 'add_custom_tracking_fields'));
@@ -59,6 +57,9 @@ if (!class_exists('Run_WC_PCR')) {
 				// if the link orders link is clicked, potentially link previous orders
 				add_action('wp_login', array($this, 'link_previous_orders'), 10, 2);
 			}
+
+			// Add shortcode ( to use for custom thank you pages )
+			add_shortcode('wc_pcr_message', array($this, 'get_registration_notice'));
 		}
 
 		/**
@@ -70,15 +71,8 @@ if (!class_exists('Run_WC_PCR')) {
 		 */
 		public function enqueue_styles_public($hook)
 		{
-
 			wp_enqueue_style('wc-pcr-css', plugin_dir_url(__FILE__) . 'assets/css/wc-post-checkout-registration-public.css', array(), $this->version, 'all');
 		}
-		public function enqueue_scripts_public($hook)
-		{
-
-			wp_enqueue_script('wc-pcr-js', plugin_dir_url(__FILE__) . 'assets/js/wc-post-checkout-registration-public.js', array('jquery'), $this->version, false);
-		}
-
 		/**
 		 * Loads the plugin's translated strings.
 		 *
@@ -99,21 +93,30 @@ if (!class_exists('Run_WC_PCR')) {
 		 * @since    1.0.0
 		 * @access   public
 		 */
-		public function add_pcr_enable_field($settings)
+		public function add_pcr_enable_fields($settings)
 		{
 
 			$updated_settings = array();
 
 			foreach ($settings as $section) {
 
-				// at the bottom of the account registration options section
+
+				$updated_settings[] = $section;
+
+				// after the account registration options section
 				if (
 					isset($section['id']) && 'account_registration_options' == $section['id'] &&
 					isset($section['type']) && 'sectionend' == $section['type']
 				) {
 
 					$updated_settings[] = array(
-						'title'         => __('Post-checkout registration', 'wc-pcr'),
+						'title' => __('Post-checkout registration', 'wc-pcr'),
+						'type'  => 'title',
+						'id'    => 'wc_pcr_options',
+					);
+
+					$updated_settings[] = array(
+						'title'         => __('Enable', 'wc-pcr'),
 						'desc'      	=> __('Enable one-click customer registration on the "Order Received" page.', 'wc-pcr'),
 						'desc_tip'      => __('Adds an option to the order-recieved page to allow guest users to register with a single click using the data from their order.', 'wc-pcr'),
 						'id'            => 'woocommerce_enable_post_checkout_registration',
@@ -121,9 +124,29 @@ if (!class_exists('Run_WC_PCR')) {
 						'type'          => 'checkbox',
 						'autoload'      => true,
 					);
-				}
 
-				$updated_settings[] = $section;
+					$updated_settings[] = array(
+						'title'    => __('New account message', 'wc-pcr'),
+						'desc_tip' => __('Define the message that should appear when the user doesn`t have an account.', 'wc-pcr'),
+						'id'       => 'wc_pcr_new_account_msg',
+						'type'     => 'textarea',
+						'css'      => 'min-width: 50%; height: 75px;',
+						'default'  => $this->get_default_new_account_msg(),
+					);
+					$updated_settings[] = array(
+						'title'    => __('Existing account message', 'wc-pcr'),
+						'desc_tip' => __('Define the message that should appear when the user have an account already.', 'wc-pcr'),
+						'id'       => 'wc_pcr_existing_account_msg',
+						'type'     => 'textarea',
+						'css'      => 'min-width: 50%; height: 75px;',
+						'default'  => $this->get_default_existing_account_msg(),
+					);
+
+					$updated_settings[] = array(
+						'sectionend'    => 'wc_pcr_options',
+						'type'          => 'sectionend',
+					);
+				}
 			}
 
 			return $updated_settings;
@@ -183,7 +206,7 @@ if (!class_exists('Run_WC_PCR')) {
 				trailingslashit(wc_get_page_permalink('myaccount'))
 			);
 
-			$message  = __('Looks like you already have an account! You can link this order to it by clicking here to log in:', 'wc-pcr');
+			$message  = get_option('wc_pcr_existing_account_msg', $this->get_default_existing_account_msg());
 			$message .= ' <a class="button" href="' . esc_url($url) . '">' . esc_html__('Log in', 'wc-pcr') . '</a>';
 
 			return "<div class='woocommerce-info'>{$message}</div>";
@@ -209,7 +232,7 @@ if (!class_exists('Run_WC_PCR')) {
 				trailingslashit(wc_get_page_permalink('myaccount'))
 			);
 
-			$message  = __('Ensure checkout is fast and easy next time! Create an account and we\'ll save your address details from this order.', 'wc-pcr');
+			$message  = get_option('wc_pcr_new_account_msg', $this->get_default_new_account_msg());
 			$message .= ' <a class="button" href="' . esc_url($url) . '">' . esc_html__('Create Account', 'wc-pcr') . '</a>';
 
 			return "<div class='woocommerce-info'>{$message}</div>";
@@ -223,23 +246,35 @@ if (!class_exists('Run_WC_PCR')) {
 		public function add_custom_tracking_fields()
 		{
 
-			if (!isset($_GET['link_order_id'], $_GET['login_token'])) {
-				return;
-			}
+			if (isset($_GET['link_order_id'], $_GET['login_token']) || isset($_COOKIE['link-order-data'])) {
 
-			$order_id = (int) $_GET['link_order_id'];
-			$token    = wc_clean($_GET['login_token']);
+				if (isset($_GET['link_order_id'], $_GET['login_token'])) {
+					$order_data = array(
+						'link_order_id' => $_GET['link_order_id'],
+						'login_token' => $_GET['login_token'],
+					);
+				} else {
+					$data = explode('|', $_COOKIE['link-order-data']);
+					$order_data = array(
+						'link_order_id' => $data[0],
+						'login_token' => $data[1],
+					);
+				}
 
-			ob_start();
+				$order_id = (int)$order_data['link_order_id'];
+				$token    = wc_clean($order_data['login_token']);
+
+				ob_start();
 
 ?>
-			<p class="form-row">
-				<input class="woocommerce-Input input-hidden" type="hidden" name="wc_pcr_link_order_id" id="wc_pcr_link_order_id" value="<?php echo esc_attr($order_id); ?>" />
-				<input class="woocommerce-Input input-hidden" type="hidden" name="wc_pcr_login_token" id="wc_pcr_login_token" value="<?php echo esc_attr($token); ?>" />
-			</p>
+				<p class="form-row">
+					<input class="woocommerce-Input input-hidden" type="hidden" name="wc_pcr_link_order_id" id="wc_pcr_link_order_id" value="<?php echo esc_attr($order_id); ?>" />
+					<input class="woocommerce-Input input-hidden" type="hidden" name="wc_pcr_login_token" id="wc_pcr_login_token" value="<?php echo esc_attr($token); ?>" />
+				</p>
 <?php
 
-			echo ob_get_clean();
+				echo ob_get_clean();
+			}
 		}
 
 
@@ -257,6 +292,12 @@ if (!class_exists('Run_WC_PCR')) {
 			// ensure all data is set
 			if (!isset($_POST['wc_pcr_link_order_id'], $_POST['wc_pcr_login_token'])) {
 				return;
+			}
+
+			// Unset order data cookie if it exists
+			if (isset($_COOKIE['link-order-data'])) {
+				unset($_COOKIE['link-order-data']); 
+				setcookie('link-order-data', null, -1, COOKIEPATH, COOKIE_DOMAIN); 
 			}
 
 			$order_id = (int) $_POST['wc_pcr_link_order_id'];
@@ -290,7 +331,6 @@ if (!class_exists('Run_WC_PCR')) {
 		 */
 		public function maybe_register_new_customer()
 		{
-
 			if (!is_account_page() || !isset($_REQUEST['registration_order_id'])) {
 				return;
 			}
@@ -322,6 +362,19 @@ if (!class_exists('Run_WC_PCR')) {
 				wc_add_notice($e->getMessage(), 'error');
 				return;
 			}
+		}
+		/**
+		 * Store order id and login token as a cookie to be able to login page without URL query args
+		 *
+		 * @since 1.0.1
+		 */
+		public function maybe_store_order_data()
+		{
+			if (!isset($_GET['link_order_id']) || !isset($_GET['login_token'])) {
+				return;
+			}
+
+			setcookie('link-order-data', $_GET['link_order_id'] . '|' . $_GET['login_token'], time() + (3600 * 6), COOKIEPATH, COOKIE_DOMAIN);
 		}
 
 
@@ -475,6 +528,40 @@ if (!class_exists('Run_WC_PCR')) {
 		public function __return_yes_string()
 		{
 			return 'yes';
+		}
+		/**
+		 * Force generata a username or password for a new customer
+		 *
+		 * @since 1.0.1
+		 *
+		 * @return string
+		 */
+		public function get_default_new_account_msg()
+		{
+			return __('Ensure checkout is fast and easy next time! Create an account and we\'ll save your address details from this order.', 'wc-pcr');
+		}
+		/**
+		 * Force generata a username or password for a new customer
+		 *
+		 * @since 1.0.1
+		 *
+		 * @return string
+		 */
+		public function get_default_existing_account_msg()
+		{
+			return __('Looks like you already have an account! You can link this order to it by clicking here to log in:', 'wc-pcr');
+		}
+		/**
+		 * Retrieve the markup for registration notice
+		 *
+		 * @since 1.0.1
+		 *
+		 * @return string
+		 */
+		public function get_registration_notice($atts)
+		{
+			$order = isset($_GET['order_id']) ? wc_get_order($_GET['order_id']) : false;
+			return $this->maybe_show_registration_notice('', $order);
 		}
 	}
 }
