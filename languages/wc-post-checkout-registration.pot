@@ -2,25 +2,20 @@
 # This file is distributed under the same license as the Post Checkout Registration for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Post Checkout Registration for WooCommerce 1.0.0\n"
+"Project-Id-Version: Post Checkout Registration for WooCommerce 1.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wc-post-checkout-registration\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-06-09T16:43:58+00:00\n"
+"POT-Creation-Date: 2021-06-11T15:56:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: wc-pcr\n"
 
 #. Plugin Name of the plugin
 msgid "Post Checkout Registration for WooCommerce"
-msgstr ""
-
-#. Plugin URI of the plugin
-#. Author URI of the plugin
-msgid "https://alikhallad.com"
 msgstr ""
 
 #. Description of the plugin
@@ -31,56 +26,80 @@ msgstr ""
 msgid "ALI KHALLAD"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:116
+#. Author URI of the plugin
+msgid "https://alikhallad.com"
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:113
 msgid "Post-checkout registration"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:117
+#: includes/class-wc-post-checkout-registration.php:119
+msgid "Enable"
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:120
 msgid "Enable one-click customer registration on the \"Order Received\" page."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:118
+#: includes/class-wc-post-checkout-registration.php:121
 msgid "Adds an option to the order-recieved page to allow guest users to register with a single click using the data from their order."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:186
-msgid "Looks like you already have an account! You can link this order to it by clicking here to log in:"
+#: includes/class-wc-post-checkout-registration.php:129
+msgid "New account message"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:187
+#: includes/class-wc-post-checkout-registration.php:130
+msgid "Define the message that should appear when the user doesn`t have an account."
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:137
+msgid "Existing account message"
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:138
+msgid "Define the message that should appear when the user have an account already."
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:210
 msgid "Log in"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:212
-msgid "Ensure checkout is fast and easy next time! Create an account and we'll save your address details from this order."
-msgstr ""
-
-#: includes/class-wc-post-checkout-registration.php:213
+#: includes/class-wc-post-checkout-registration.php:236
 msgid "Create Account"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:267
-#: includes/class-wc-post-checkout-registration.php:275
+#: includes/class-wc-post-checkout-registration.php:308
+#: includes/class-wc-post-checkout-registration.php:316
 msgid "Error linking your previous order."
 msgstr ""
 
 #. translators: Placeholders: %s - order number
-#: includes/class-wc-post-checkout-registration.php:283
+#: includes/class-wc-post-checkout-registration.php:324
 msgid "Order #%s has been linked to your account!"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:300
+#: includes/class-wc-post-checkout-registration.php:340
 msgid "Whoops, looks like this registration link is not valid."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:313
+#: includes/class-wc-post-checkout-registration.php:353
 msgid "Welcome, %1$s! Your %2$saccount information%3$s has been saved."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:345
+#: includes/class-wc-post-checkout-registration.php:398
 msgid "This order does not exist; it may have been deleted. Please register manually."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:352
+#: includes/class-wc-post-checkout-registration.php:405
 msgid "Invalid registration link. Please register manually."
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:541
+msgid "Ensure checkout is fast and easy next time! Create an account and we'll save your address details from this order."
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:552
+msgid "Looks like you already have an account! You can link this order to it by clicking here to log in:"
 msgstr ""
