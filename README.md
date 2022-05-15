@@ -20,3 +20,5 @@ The plugin will automatically create a user account from the guest details, gene
 * Added options to change prompt message text.
 * Link order to existing account even after the user moves outside the login page and sign in later within 6 hours
 * Clean-up
+##### 1.0.3
+* Tested with latest WordPress and WooCommerce versions
