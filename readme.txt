@@ -2,8 +2,8 @@
 Contributors: alikhallad
 Tags: woocommerce registration, post-checkout registration, woocommerce abandonment, woocommerce marketing
 Requires at least: 5.6
-Tested up to: 5.9.3
-Stable tag: 1.0.2
+Tested up to: 6.0
+Stable tag: 1.0.3
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
