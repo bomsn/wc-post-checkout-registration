@@ -54,3 +54,9 @@ That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt
 * Added options to change prompt message text.
 * Link order to existing account even after the user moves outside the login page and sign in later within 6 hours
 * Clean-up
+
+= 1.0.2 =
+* Tested with latest WordPress and WooCommerce versions
+
+= 1.0.3 =
+* Prevent error when "When creating an account, send the new user a link to set their password" option is disabled.

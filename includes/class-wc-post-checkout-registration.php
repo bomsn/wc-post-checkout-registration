@@ -45,18 +45,18 @@ if (!class_exists('Run_WC_PCR')) {
 				// maybe render the prompt on the "thank you" page
 				// we don't use the woocommerce_thankyou action as we can't consistently add a notice for immediate display
 				add_filter('woocommerce_thankyou_order_received_text', array($this, 'maybe_show_registration_notice'), 10, 2);
-
-				// if the registration link is clicked, validate and register the customer
-				add_action('template_redirect', array($this, 'maybe_register_new_customer'));
-				// Store order ID and token so it's linked to the user account after login
-				add_action('template_redirect', array($this, 'maybe_store_order_data'));
-
-				// add login form fields to indicate when we should link previous orders
-				add_action('woocommerce_login_form', array($this, 'add_custom_tracking_fields'));
-
-				// if the link orders link is clicked, potentially link previous orders
-				add_action('wp_login', array($this, 'link_previous_orders'), 10, 2);
 			}
+
+			// if the registration link is clicked, validate and register the customer
+			add_action('template_redirect', array($this, 'maybe_register_new_customer'));
+			// Store order ID and token so it's linked to the user account after login
+			add_action('template_redirect', array($this, 'maybe_store_order_data'));
+
+			// add login form fields to indicate when we should link previous orders
+			add_action('woocommerce_login_form', array($this, 'add_custom_tracking_fields'));
+
+			// if the link orders link is clicked, potentially link previous orders
+			add_action('wp_login', array($this, 'link_previous_orders'), 10, 2);
 
 			// Add shortcode ( to use for custom thank you pages )
 			add_shortcode('wc_pcr_message', array($this, 'get_registration_notice'));
@@ -296,8 +296,8 @@ if (!class_exists('Run_WC_PCR')) {
 
 			// Unset order data cookie if it exists
 			if (isset($_COOKIE['link-order-data'])) {
-				unset($_COOKIE['link-order-data']); 
-				setcookie('link-order-data', null, -1, COOKIEPATH, COOKIE_DOMAIN); 
+				unset($_COOKIE['link-order-data']);
+				setcookie('link-order-data', null, -1, COOKIEPATH, COOKIE_DOMAIN);
 			}
 
 			$order_id = (int) $_POST['wc_pcr_link_order_id'];
@@ -421,7 +421,19 @@ if (!class_exists('Run_WC_PCR')) {
 			add_filter('woocommerce_registration_generate_username', [$this, '__return_yes_string']);
 			add_filter('woocommerce_registration_generate_password', [$this, '__return_yes_string']);
 
+			// Make sure the a link to set the password is sent in the confirmation email even if this option is disabled.
+			$woocommerce_registration_generate_password = null;
+			if ('yes' !== get_option('woocommerce_registration_generate_password')) {
+				$woocommerce_registration_generate_password = get_option('woocommerce_registration_generate_password');
+				update_option('woocommerce_registration_generate_password', 'yes');
+			}
+
 			$user_id = wc_create_new_customer($email);
+
+			// Restore the existing value
+			if (null !== $woocommerce_registration_generate_password) {
+				update_option('woocommerce_registration_generate_password', $woocommerce_registration_generate_password);
+			}
 
 			if (is_wp_error($user_id)) {
 				throw new Exception($user_id->get_error_message());
