@@ -13,8 +13,6 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-echo get_option('woocommerce_registration_generate_password');
-die();
 /**
  * The core plugin class that is used to define all related hooks.
  */
