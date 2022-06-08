@@ -572,7 +572,18 @@ if (!class_exists('Run_WC_PCR')) {
 		 */
 		public function get_registration_notice($atts)
 		{
-			$order = isset($_GET['order_id']) ? wc_get_order($_GET['order_id']) : false;
+			$order = false;
+			$atts = shortcode_atts(
+				array(
+					'order_id' => isset($_GET['order_id']) ? $_GET['order_id'] : false,
+				),
+				$atts,
+				'wc_pcr_message'
+			);
+
+			if (!empty($atts['order_id'])) {
+				$order = wc_get_order($_GET['order_id']);
+			}
 			return $this->maybe_show_registration_notice('', $order);
 		}
 	}

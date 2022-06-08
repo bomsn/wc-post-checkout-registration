@@ -3,7 +3,7 @@ Contributors: alikhallad
 Tags: woocommerce registration, post-checkout registration, woocommerce abandonment, woocommerce marketing
 Requires at least: 5.6
 Tested up to: 6.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -42,7 +42,7 @@ Yes, you can. You have the option to set your own message in WC account settings
 
 = What if I'm using a custom thank you page? =
 
-That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt to appear.
+That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt to appear. Just make sure to pass the order id in the URL (eg: /?order_id=1), or as a shortcode attribute (eg: [wc_pcr_message order_id="1"])
 
 == Changelog ==
 
@@ -60,3 +60,6 @@ That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt
 
 = 1.0.3 =
 * Prevent error when "When creating an account, send the new user a link to set their password" option is disabled.
+
+= 1.0.4 =
+* Allow passing the order id in the shortcode as an attribute (eg; [wc_pcr_message order_id="1"])
