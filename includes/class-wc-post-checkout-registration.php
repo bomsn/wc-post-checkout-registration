@@ -582,7 +582,7 @@ if (!class_exists('Run_WC_PCR')) {
 			);
 
 			if (!empty($atts['order_id'])) {
-				$order = wc_get_order($_GET['order_id']);
+				$order = wc_get_order($atts['order_id']);
 			}
 			return $this->maybe_show_registration_notice('', $order);
 		}

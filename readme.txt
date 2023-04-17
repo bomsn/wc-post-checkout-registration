@@ -63,3 +63,6 @@ That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt
 
 = 1.0.4 =
 * Allow passing the order id in the shortcode as an attribute (eg; [wc_pcr_message order_id="1"])
+
+= 1.0.5 =
+* Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute
