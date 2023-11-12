@@ -3,7 +3,7 @@ Contributors: alikhallad
 Tags: woocommerce registration, post-checkout registration, woocommerce abandonment, woocommerce marketing
 Requires at least: 5.6
 Tested up to: 6.4.1
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -66,5 +66,7 @@ That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt
 
 = 1.0.5 =
 * Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute.
+
+= 1.0.6 =
 * Added the ability to auto link orders to the customer if they have an existing account.
 * Add an option to show login form below the post-checkout notice.

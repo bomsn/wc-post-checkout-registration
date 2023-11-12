@@ -30,5 +30,7 @@ The plugin will automatically create a user account from the guest details, gene
 
 #####  1.0.5 
 * Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute.
+
+#####  1.0.6
 * Added the ability to auto link orders to the customer if they have an existing account.
 * Add an option to show login form below the post-checkout notice.
