@@ -2,7 +2,7 @@
 
 This plugin provides seamless registration option for your guest customers. When they reach the order confirmation page after checkout, they’ll be prompted to create an account with a single click, only if they don't have one already.
 
-The plugin will automatically create a user account from the guest details, generate a password for them, logging them in. Moreover, it will trigger a 'new-account' email, and redirect the user to their dashboard.
+The plugin will automatically create a user account from the guest details, generate a password for them, logging them in. Moreover, it will trigger a 'new-account' email, and redirect the user to their dashboard. If the user already exists, the plugin will prompt them to login to link their order, or automatically link it for them based on the settings.
 
 ### How to use
 - Install the plugin and activate it
@@ -30,3 +30,5 @@ The plugin will automatically create a user account from the guest details, gene
 
 #####  1.0.5 
 * Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute
+* Added the ability to auto link orders to the customer if they have an existing account.
+* Add an option to show login form below the post-checkout notice.
