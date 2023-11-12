@@ -236,14 +236,13 @@ if (!class_exists('Run_WC_PCR')) {
 		 */
 		public function maybe_show_registration_notice($order_id)
 		{
-
 			$order = wc_get_order($order_id);
-			// sanity check & send away!
+			// sanity check
 			if ($order instanceof WC_Order) {
 
-				$existing_user = get_user_by('email', $order->get_billing_email());
-
 				if (!is_user_logged_in()) {
+
+					$existing_user = get_user_by('email', $order->get_billing_email());
 
 					if ($existing_user && get_option('wc_pcr_auto_linking', 'no') === 'yes' && !$order->get_meta('_wc_pcr_order_linked')) {
 						// If not already linked, link any non-assigned orders with the customer email to their account

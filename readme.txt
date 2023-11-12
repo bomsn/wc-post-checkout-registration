@@ -65,6 +65,6 @@ That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt
 * Allow passing the order id in the shortcode as an attribute (eg; [wc_pcr_message order_id="1"])
 
 = 1.0.5 =
-* Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute
+* Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute.
 * Added the ability to auto link orders to the customer if they have an existing account.
 * Add an option to show login form below the post-checkout notice.
