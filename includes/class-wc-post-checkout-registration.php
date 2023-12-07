@@ -690,10 +690,7 @@ if (!class_exists('Run_WC_PCR')) {
 				'wc_pcr_message'
 			);
 
-			if (!empty($atts['order_id'])) {
-				$order = wc_get_order($atts['order_id']);
-			}
-			return $this->maybe_show_registration_notice('', $order);
+			$this->maybe_show_registration_notice($atts['order_id']);
 		}
 	}
 }
