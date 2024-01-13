@@ -73,3 +73,6 @@ That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt
 
 = 1.0.7 =
 * Bug fix ( issue with [wc_pcr_message] shortcode on custom thank you pages )
+
+= 1.0.8 =
+* Bug fix ( fix woocommerce notices for the login form )
