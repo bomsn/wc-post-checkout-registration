@@ -234,7 +234,7 @@ if (!class_exists('Run_WC_PCR')) {
 		 * @param \WC_Order $order the placed order object
 		 * @return string the updated text
 		 */
-		public function maybe_show_registration_notice($order_id)
+		public function maybe_show_registration_notice($order_id, $print_notices = true)
 		{
 			$order = wc_get_order($order_id);
 			// sanity check
@@ -268,7 +268,10 @@ if (!class_exists('Run_WC_PCR')) {
 							if ($quick_login_form_enabled) {
 								wp_cache_set('quick_form_link_order_id', $order->get_id());
 								wp_cache_set('quick_form_login_token', $token);
-								woocommerce_login_form();
+								if ($print_notices) {
+									wc_print_notices(); // Print Woo notices
+								}
+								woocommerce_login_form(); // Print Woo login form
 							}
 						} else {
 							$message = $this->render_registration_prompt($order, $token);
@@ -685,12 +688,13 @@ if (!class_exists('Run_WC_PCR')) {
 			$atts = shortcode_atts(
 				array(
 					'order_id' => isset($_GET['order_id']) ? $_GET['order_id'] : false,
+					'print_notices' => isset($_GET['print_notices']) ? (bool)$_GET['print_notices'] : true,
 				),
 				$atts,
 				'wc_pcr_message'
 			);
 
-			$this->maybe_show_registration_notice($atts['order_id']);
+			$this->maybe_show_registration_notice($atts['order_id'], $atts['print_notices']);
 		}
 	}
 }

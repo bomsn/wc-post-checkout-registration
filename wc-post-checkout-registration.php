@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Post Checkout Registration for WooCommerce
  * Description:       Allows you to add an option to register with one-click after checkout
- * Version:           1.0.7
+ * Version:           1.0.8
  * Author:            Ali Khallad
  * Author URI:        https://alikhallad.com
  * Text Domain:       wc-pcr
