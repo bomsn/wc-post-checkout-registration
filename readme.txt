@@ -62,8 +62,27 @@ The plugin automatically displays on the default WooCommerce order confirmation 
 * Added Gutenberg block for manual placement on custom pages
 * Updated minimum requirements: WordPress 6.5+, WooCommerce 8.2+, PHP 7.4+
 
-= 1.0.0 =
-* First release
+= 1.0.8 =
+* Bug fix ( fix woocommerce notices for the login form )
+
+= 1.0.7 =
+* Bug fix ( issue with [wc_pcr_message] shortcode on custom thank you pages )
+
+= 1.0.6 =
+* Added the ability to auto link orders to the customer if they have an existing account.
+* Add an option to show login form below the post-checkout notice.
+
+= 1.0.5 =
+* Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute.
+
+= 1.0.4 =
+* Allow passing the order id in the shortcode as an attribute (eg; [wc_pcr_message order_id="1"])
+
+= 1.0.3 =
+* Prevent error when "When creating an account, send the new user a link to set their password" option is disabled.
+
+= 1.0.2 =
+* Tested with latest WordPress and WooCommerce versions
 
 = 1.0.1 =
 * Added shortcode `[wc_pcr_message]` to allow displaying prompt on custom checkout page
@@ -71,24 +90,5 @@ The plugin automatically displays on the default WooCommerce order confirmation 
 * Link order to existing account even after the user moves outside the login page and sign in later within 6 hours
 * Clean-up
 
-= 1.0.2 =
-* Tested with latest WordPress and WooCommerce versions
-
-= 1.0.3 =
-* Prevent error when "When creating an account, send the new user a link to set their password" option is disabled.
-
-= 1.0.4 =
-* Allow passing the order id in the shortcode as an attribute (eg; [wc_pcr_message order_id="1"])
-
-= 1.0.5 =
-* Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute.
-
-= 1.0.6 =
-* Added the ability to auto link orders to the customer if they have an existing account.
-* Add an option to show login form below the post-checkout notice.
-
-= 1.0.7 =
-* Bug fix ( issue with [wc_pcr_message] shortcode on custom thank you pages )
-
-= 1.0.8 =
-* Bug fix ( fix woocommerce notices for the login form )
+= 1.0.0 =
+* First release
