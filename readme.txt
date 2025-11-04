@@ -1,10 +1,12 @@
 === One-Click Post Checkout Registration for WooCommerce ===
 Contributors: alikhallad
-Tags: woocommerce registration, post-checkout registration, woocommerce abandonment, woocommerce marketing
-Requires at least: 5.6
-Tested up to: 6.4.2
-Stable tag: 1.0.8
+Tags: woocommerce registration, post-checkout registration, woocommerce abandonment, woocommerce marketing, gutenberg block
+Requires at least: 6.5
+Tested up to: 6.7
+Stable tag: 2.0.0
 Requires PHP: 7.4
+WC requires at least: 8.2
+WC tested up to: 9.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,9 +14,11 @@ Reduce abandonment and allows guest users to register after checkout with one-cl
 
 == Description ==
 
-This plugin provides seamless registration option for your guest customers. When they reach the order confirmation page after checkout, they’ll be prompted to create an account with a single click, only if they don't have one already.
+This plugin provides seamless registration option for your guest customers. When they reach the order confirmation page after checkout, they'll be prompted to create an account with a single click, only if they don't have one already.
 
 The plugin will automatically create a user account from the guest details, generate a password for them, logging them in. Moreover, it will trigger a 'new-account' email, and redirect the user to their dashboard.
+
+The registration prompt appears automatically on the default WooCommerce order confirmation page. For custom thank you pages, use the Gutenberg block or the `[wc_pcr_message]` shortcode to place the prompt manually.
 
 = How to use =
 
@@ -24,9 +28,17 @@ The plugin will automatically create a user account from the guest details, gene
 - Find and check the "Post-checkout registration" option
 - Save changes
 
-= Development =
+= Manual Placement =
 
-If you'd like to view the source code and contribute to this plugin, check out the plugin's [github repo](https://github.com/bomsn/wc-post-checkout-registration).
+For custom thank you pages, you can manually place the registration prompt:
+
+**Using the Block:**
+1. Edit your page in the block editor
+2. Search for "Post Checkout Registration" block
+3. Configure display settings and publish
+
+**Using the Shortcode:**
+Add `[wc_pcr_message]` where you want the prompt to appear. Pass the order ID via URL parameter (eg: `/?order_id=1`) or shortcode attribute (eg: `[wc_pcr_message order_id="1"]`).
 
 == Screenshots ==
 
@@ -42,9 +54,13 @@ Yes, you can. You have the option to set your own message in WC account settings
 
 = What if I'm using a custom thank you page? =
 
-That's easy, just use the `[wc_pcr_message]` shortcode where you want the prompt to appear. Just make sure to pass the order id in the URL (eg: /?order_id=1), or as a shortcode attribute (eg: [wc_pcr_message order_id="1"])
+The plugin automatically displays on the default WooCommerce order confirmation page. For custom pages, use the "Post Checkout Registration" block in the block editor, or add the `[wc_pcr_message]` shortcode. Make sure to pass the order ID via URL parameter (eg: `/?order_id=1`) or shortcode attribute (eg: `[wc_pcr_message order_id="1"]`).
 
 == Changelog ==
+
+= 2.0.0 =
+* Added Gutenberg block for manual placement on custom pages
+* Updated minimum requirements: WordPress 6.5+, WooCommerce 8.2+, PHP 7.4+
 
 = 1.0.0 =
 * First release

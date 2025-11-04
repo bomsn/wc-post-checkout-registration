@@ -1,0 +1,28 @@
+{
+  "name": "bomsn/wc-post-checkout-registration",
+  "description": "Post Checkout Registration for WooCommerce",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Ali Khallad",
+      "homepage": "https://alikhallad.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "wp-coding-standards/wpcs": "^3.0"
+  },
+  "scripts": {
+    "format": "phpcbf --standard=WordPress",
+    "lint": "phpcs --standard=WordPress"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
+}

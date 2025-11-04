@@ -1,105 +1,232 @@
-# Copyright (C) 2021 ALI KHALLAD
+# Copyright (C) 2025 Ali Khallad
 # This file is distributed under the same license as the Post Checkout Registration for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Post Checkout Registration for WooCommerce 1.0.1\n"
+"Project-Id-Version: Post Checkout Registration for WooCommerce 2.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wc-post-checkout-registration\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-06-11T15:56:38+00:00\n"
+"POT-Creation-Date: 2025-11-04T16:14:56+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.4.0\n"
+"X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: wc-pcr\n"
 
 #. Plugin Name of the plugin
+#: C:\wamp64\www\woo\wp-content\plugins\wc-post-checkout-registration\wc-post-checkout-registration.php
 msgid "Post Checkout Registration for WooCommerce"
 msgstr ""
 
 #. Description of the plugin
+#: C:\wamp64\www\woo\wp-content\plugins\wc-post-checkout-registration\wc-post-checkout-registration.php
 msgid "Allows you to add an option to register with one-click after checkout"
 msgstr ""
 
 #. Author of the plugin
-msgid "ALI KHALLAD"
+#: C:\wamp64\www\woo\wp-content\plugins\wc-post-checkout-registration\wc-post-checkout-registration.php
+msgid "Ali Khallad"
 msgstr ""
 
 #. Author URI of the plugin
+#: C:\wamp64\www\woo\wp-content\plugins\wc-post-checkout-registration\wc-post-checkout-registration.php
 msgid "https://alikhallad.com"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:113
+#: includes/class-wc-post-checkout-registration.php:125
 msgid "Post-checkout registration"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:119
+#: includes/class-wc-post-checkout-registration.php:132
 msgid "Enable"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:120
-msgid "Enable one-click customer registration on the \"Order Received\" page."
+#: includes/class-wc-post-checkout-registration.php:133
+msgid "Enable post-checkout registration."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:121
-msgid "Adds an option to the order-recieved page to allow guest users to register with a single click using the data from their order."
+#: includes/class-wc-post-checkout-registration.php:134
+msgid "Adds an option to \"thank you\" page to allow guest users to register with a single click using the data from their order. It will also allow existing customers to link their orders upon login with a single click. Automated linking for existing users can be enabled as well from the options below."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:129
+#: includes/class-wc-post-checkout-registration.php:142
+msgid "Automatically link orders"
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:143
+msgid "Link orders to existing accounts automatically."
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:144
+msgid "Automatically link orders to any existing account with the same order email. This option will override all the options below and will force the user to login to view their order."
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:152
 msgid "New account message"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:130
+#: includes/class-wc-post-checkout-registration.php:153
 msgid "Define the message that should appear when the user doesn`t have an account."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:137
+#: includes/class-wc-post-checkout-registration.php:160
 msgid "Existing account message"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:138
+#: includes/class-wc-post-checkout-registration.php:161
 msgid "Define the message that should appear when the user have an account already."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:210
+#: includes/class-wc-post-checkout-registration.php:169
+msgid "Quick login"
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:170
+msgid "Enable quick login form."
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:171
+msgid "This option will display the login form right below the \"Existing account message\". Note that this will work only when \"Automatically link orders\" is disabled."
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:219
+msgid "Settings"
+msgstr ""
+
+#: includes/class-wc-post-checkout-registration.php:314
 msgid "Log in"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:236
+#: includes/class-wc-post-checkout-registration.php:342
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:148
 msgid "Create Account"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:308
-#: includes/class-wc-post-checkout-registration.php:316
+#: includes/class-wc-post-checkout-registration.php:426
+#: includes/class-wc-post-checkout-registration.php:434
 msgid "Error linking your previous order."
 msgstr ""
 
 #. translators: Placeholders: %s - order number
-#: includes/class-wc-post-checkout-registration.php:324
+#: includes/class-wc-post-checkout-registration.php:442
 msgid "Order #%s has been linked to your account!"
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:340
+#: includes/class-wc-post-checkout-registration.php:458
 msgid "Whoops, looks like this registration link is not valid."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:353
+#: includes/class-wc-post-checkout-registration.php:471
 msgid "Welcome, %1$s! Your %2$saccount information%3$s has been saved."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:398
+#: includes/class-wc-post-checkout-registration.php:518
 msgid "This order does not exist; it may have been deleted. Please register manually."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:405
+#: includes/class-wc-post-checkout-registration.php:525
 msgid "Invalid registration link. Please register manually."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:541
+#: includes/class-wc-post-checkout-registration.php:673
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:29
 msgid "Ensure checkout is fast and easy next time! Create an account and we'll save your address details from this order."
 msgstr ""
 
-#: includes/class-wc-post-checkout-registration.php:552
+#: includes/class-wc-post-checkout-registration.php:684
 msgid "Looks like you already have an account! You can link this order to it by clicking here to log in:"
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:54
+msgid "Display Settings"
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:63
+msgid "Automatic display is enabled in WooCommerce settings. This block provides manual placement control."
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:71
+msgid "Display Mode"
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:75
+msgid "Auto (order confirmation only)"
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:82
+msgid "Always show"
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:86
+msgid "Never show"
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:93
+msgid "Control when the registration prompt appears."
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:100
+msgid "Show Quick Login Form"
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:105
+msgid "Display login form for existing customers."
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:116
+msgid "⚠️ Post-checkout registration is disabled. Please enable it in WooCommerce → Settings → Accounts & Privacy for this block to work."
+msgstr ""
+
+#: blocks/registration-prompt/build/index.js:1
+#: blocks/registration-prompt/src/edit.js:125
+msgid "⚠️ Automatic display is already enabled for checkout pages. This block will be hidden to prevent duplication."
+msgstr ""
+
+#: blocks/registration-prompt/build/block.json
+#: blocks/registration-prompt/src/block.json
+msgctxt "block title"
+msgid "Post Checkout Registration"
+msgstr ""
+
+#: blocks/registration-prompt/build/block.json
+#: blocks/registration-prompt/src/block.json
+msgctxt "block description"
+msgid "Display registration prompt for guest customers after checkout."
+msgstr ""
+
+#: blocks/registration-prompt/build/block.json
+#: blocks/registration-prompt/src/block.json
+msgctxt "block keyword"
+msgid "woocommerce"
+msgstr ""
+
+#: blocks/registration-prompt/build/block.json
+#: blocks/registration-prompt/src/block.json
+msgctxt "block keyword"
+msgid "registration"
+msgstr ""
+
+#: blocks/registration-prompt/build/block.json
+#: blocks/registration-prompt/src/block.json
+msgctxt "block keyword"
+msgid "checkout"
+msgstr ""
+
+#: blocks/registration-prompt/build/block.json
+#: blocks/registration-prompt/src/block.json
+msgctxt "block keyword"
+msgid "account"
 msgstr ""

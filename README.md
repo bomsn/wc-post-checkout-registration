@@ -11,26 +11,87 @@ The plugin will automatically create a user account from the guest details, gene
 - Find and check the "Post-checkout registration" option
 - Save changes
 
-## Changelog
+### Block Usage
 
-#####  1.0.1 
-* Added shortcode `[wc_pcr_message]` to allow displaying prompt on custom checkout page
-* Added options to change prompt message text.
-* Link order to existing account even after the user moves outside the login page and sign in later within 6 hours
-* Clean-up
+As of version 2.0.0, you can use the Gutenberg block for more flexible placement:
 
-#####  1.0.2 
-* Tested with latest WordPress and WooCommerce versions
+1. Edit your WooCommerce Order Received page
+2. Add the "Post Checkout Registration" block
+3. Configure display settings in the block sidebar
+4. Save your changes
 
-#####  1.0.3 
-* Prevent error when "When creating an account, send the new user a link to set their password" option is disabled.
+**Block Settings:**
+- **Display Mode:** Control when the prompt appears (auto/always/never)
+- **Quick Login Form:** Show/hide login form for existing customers
 
-#####  1.0.4 
-* Allow passing the order id in the shortcode as an attribute (eg; [wc_pcr_message order_id="1"])
+**Note:** The shortcode `[wc_pcr_message]` continues to work for backward compatibility.
 
-#####  1.0.5 
-* Fixed: order ID was not being pulled correctly in some cases when passed as a shortcode attribute.
+## Development
 
-#####  1.0.6
-* Added the ability to auto link orders to the customer if they have an existing account.
-* Add an option to show login form below the post-checkout notice.
+### Contributing
+
+Contributions are welcome! If you'd like to contribute to this plugin:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run the build process: `npm run build`
+5. Test your changes thoroughly
+6. Submit a pull request
+
+### Build System
+
+This plugin uses modern WordPress development tools:
+
+- **@wordpress/scripts** for building blocks
+- **Composer** for PHP coding standards
+- **npm** for JavaScript dependencies
+
+### Development Commands
+
+```bash
+# Install dependencies
+npm install
+composer install
+
+# Development mode (watch for changes)
+npm start
+
+# Build for production
+npm run build
+
+# Lint JavaScript
+npm run lint:js
+
+# Format code
+npm run format
+
+# Generate translation file
+npm run make-pot
+
+# PHP linting
+composer lint
+
+# PHP formatting
+composer format
+```
+
+### Project Structure
+
+```
+wc-post-checkout-registration/
+├── blocks/registration-prompt/    # Gutenberg block
+│   ├── build/                     # Compiled assets
+│   └── src/                       # Source files
+├── includes/                      # Core PHP classes
+│   ├── class-wc-post-checkout-registration.php
+│   └── class-wc-pcr-blocks.php
+└── languages/                     # Translation files
+```
+
+### Requirements
+
+- Node.js 18+
+- PHP 7.4+
+- WordPress 6.5+
+- WooCommerce 8.2+

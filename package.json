@@ -1,0 +1,54 @@
+{
+  "name": "wc-post-checkout-registration",
+  "version": "2.0.0",
+  "description": "Post Checkout Registration for WooCommerce",
+  "author": "Ali Khallad",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress",
+    "gutenberg",
+    "block",
+    "woocommerce"
+  ],
+  "homepage": "https://github.com/bomsn/wc-post-checkout-registration",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bomsn/wc-post-checkout-registration.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bomsn/wc-post-checkout-registration/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "build": "npm run build:blocks && npm run make-pot",
+    "start": "wp-scripts start --webpack-src-dir=blocks/registration-prompt/src --output-path=blocks/registration-prompt/build",
+    "build:blocks": "wp-scripts build --webpack-src-dir=blocks/registration-prompt/src --output-path=blocks/registration-prompt/build",
+    "format": "wp-scripts format",
+    "lint:js": "wp-scripts lint-js",
+    "lint:pkg-json": "wp-scripts lint-pkg-json",
+    "make-pot": "wp i18n make-pot . languages/wc-post-checkout-registration.pot --exclude=node_modules,vendor,.git",
+    "packages-update": "wp-scripts packages-update",
+    "plugin-zip": "wp-scripts plugin-zip"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^27.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "wp-scripts format",
+      "wp-scripts lint-js --fix"
+    ],
+    "*.{json,yml,yaml,md}": [
+      "wp-scripts format"
+    ],
+    "*.php": [
+      "composer format",
+      "composer lint"
+    ]
+  }
+}

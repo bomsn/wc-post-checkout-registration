@@ -1,0 +1,1 @@
+!function(){"use strict";document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".wc-pcr-registration-prompt-block").forEach(t=>{})})}();

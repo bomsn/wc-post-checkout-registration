@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "wc-pcr/registration-prompt",
+  "version": "2.0.0",
+  "title": "Post Checkout Registration",
+  "category": "woocommerce",
+  "icon": "admin-users",
+  "description": "Display registration prompt for guest customers after checkout.",
+  "keywords": ["woocommerce", "registration", "checkout", "account"],
+  "textdomain": "wc-pcr",
+  "supports": {
+    "html": false,
+    "multiple": false,
+    "reusable": false,
+    "inserter": true,
+    "customClassName": true,
+    "className": true,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    },
+    "color": {
+      "background": true,
+      "text": true,
+      "link": true
+    },
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    }
+  },
+  "attributes": {
+    "displayMode": {
+      "type": "string",
+      "default": "auto",
+      "enum": ["auto", "always", "never"]
+    },
+    "showQuickLogin": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "providesContext": {
+    "wc-pcr/displayMode": "displayMode"
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php",
+  "viewScript": "file:./view.js"
+}
