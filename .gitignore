@@ -6,6 +6,11 @@ CLAUDE.md
 /node_modules/
 /vendor/
 
+# Tooling output
+/.phpunit.result.cache
+/phpunit.xml
+/phpcs.xml
+
 # IDE files
 .vscode/
 .idea/

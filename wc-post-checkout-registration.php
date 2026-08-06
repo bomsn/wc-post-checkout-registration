@@ -1,14 +1,15 @@
 <?php
+
 /**
  * Plugin Name:       Post Checkout Registration for WooCommerce
  * Description:       Allows you to add an option to register with one-click after checkout
- * Version:           2.0.0
+ * Version:           2.1.0
  * Author:            Ali Khallad
  * Author URI:        https://alikhallad.com
  * Text Domain:       wc-pcr
  * Domain Path:       /languages
  * Requires at least: 6.5
- * Tested up to:      6.7
+ * Tested up to:      7.2
  * Requires PHP:      7.4
  * WC requires at least: 8.2
  * WC tested up to:   9.6
@@ -39,6 +40,13 @@ add_action(
 		}
 	}
 );
+
+/**
+ * Pending order-linking state, shared by the login and password-reset flows.
+ *
+ * @since 2.1.0
+ */
+require plugin_dir_path( __FILE__ ) . 'includes/class-wc-pcr-pending-link.php';
 
 /**
  * The core plugin class that is used to define all related hooks.

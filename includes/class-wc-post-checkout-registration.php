@@ -7,7 +7,23 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 	class Run_WC_PCR {
 
 
-		public $version = '2.0.0';
+		public $version = '2.1.0';
+
+		/**
+		 * Order meta holding the order-specific registration/linking token.
+		 *
+		 * @since 2.1.0
+		 * @var string
+		 */
+		const TOKEN_META = '_wc_pcr_post_checkout_registration';
+
+		/**
+		 * Order meta holding the registration/linking token's expiry timestamp.
+		 *
+		 * @since 2.1.0
+		 * @var string
+		 */
+		const TOKEN_EXPIRES_META = '_wc_pcr_token_expires';
 
 		/**
 		 * Track if registration notice has been displayed to prevent duplication.
@@ -16,6 +32,27 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 		 * @var bool
 		 */
 		private static $notice_displayed = false;
+
+		/**
+		 * Order IDs already linked during this request, to keep notices unique.
+		 *
+		 * @since 2.1.0
+		 * @var int[]
+		 */
+		private static $linked_this_request = array();
+
+		/**
+		 * Order ID and token for the quick login form rendered in this request.
+		 *
+		 * Request-scoped on purpose. This used to live in the object cache, which
+		 * on a site with a persistent backend is shared between every visitor and
+		 * would serve one customer's pending order into another customer's login
+		 * form.
+		 *
+		 * @since 2.1.0
+		 * @var array
+		 */
+		private $quick_form_prompt = array();
 
 		public function __construct() {
 			$this->load_dependencies();
@@ -62,8 +99,22 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 			// add login form fields to indicate when we should link previous orders
 			add_action( 'woocommerce_login_form', array( $this, 'add_custom_tracking_fields' ) );
 
-			// if the link orders link is clicked, potentially link previous orders
+			/*
+			 * Apply pending link requests on authentication rather than on a login
+			 * form submission. A customer who forgot their password never touches
+			 * the login form: WooCommerce authenticates them from the reset form via
+			 * wc_set_customer_auth_cookie(), which does not fire `wp_login`.
+			 */
 			add_action( 'wp_login', array( $this, 'link_previous_orders' ), 10, 2 );
+			// WooCommerce's own reset handler, fired after auto-login and before the redirect.
+			add_action( 'woocommerce_customer_reset_password', array( $this, 'link_after_password_reset' ), 10, 1 );
+			// Core wp-login.php resets, and WooCommerce 10.9+ which fires both.
+			add_action( 'after_password_reset', array( $this, 'link_after_password_reset' ), 10, 1 );
+			// Catch-up for any other way a customer may end up authenticated: a later
+			// request, a second tab, a social login or auto-login plugin. Runs after
+			// maybe_store_order_data() so an already-authenticated customer following
+			// the prompt is served within the same request.
+			add_action( 'template_redirect', array( $this, 'maybe_link_pending_orders' ), 20 );
 
 			// Add shortcode ( to use for custom thank you pages )
 			add_shortcode( 'wc_pcr_message', array( $this, 'get_registration_notice' ) );
@@ -254,9 +305,7 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 					} else {
 						// do not use a nonce, favoring order-specific validation
 						// this way, a user can't just get a valid nonce, then change the order ID in the registration link
-						$token = wc_pcr_generate_random_token( 32 );
-						$order->update_meta_data( '_wc_pcr_post_checkout_registration', $token );
-						$order->save_meta_data();
+						$token = $this->get_order_token( $order );
 
 						if ( $existing_user ) {
 							$quick_login_form_enabled = get_option( 'wc_pcr_quick_form', 'no' ) === 'yes';
@@ -264,8 +313,18 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 							echo $message;
 
 							if ( $quick_login_form_enabled ) {
-								wp_cache_set( 'quick_form_link_order_id', $order->get_id() );
-								wp_cache_set( 'quick_form_login_token', $token );
+								/*
+								 * The inline form logs in on this same page, so register the
+								 * pending request now. That also covers the customer who
+								 * detours through "Lost your password?" from here.
+								 */
+								WC_PCR_Pending_Link::add( $order );
+
+								$this->quick_form_prompt = array(
+									'order_id' => $order->get_id(),
+									'token'    => $token,
+								);
+
 								if ( $print_notices ) {
 									wc_print_notices(); // Print Woo notices
 								}
@@ -340,52 +399,31 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 		 */
 		public function add_custom_tracking_fields() {
 
-			$quick_form_link_order_id = wp_cache_get( 'quick_form_link_order_id' );
-			$quick_form_login_token   = wp_cache_get( 'quick_form_login_token' );
-
-			if (
-				( isset( $_GET['link_order_id'] ) && isset( $_GET['login_token'] ) ) ||
-				( ! empty( $quick_form_link_order_id ) && ! empty( $quick_form_login_token ) ) ||
-				isset( $_COOKIE['link-order-data'] )
-			) {
-
-				if ( isset( $_GET['link_order_id'], $_GET['login_token'] ) ) {
-					$order_data = array(
-						'link_order_id' => $_GET['link_order_id'],
-						'login_token'   => $_GET['login_token'],
-					);
-				} elseif ( ! empty( $quick_form_link_order_id ) && ! empty( $quick_form_login_token ) ) {
-					$order_data = array(
-						'link_order_id' => $quick_form_link_order_id,
-						'login_token'   => $quick_form_login_token,
-					);
-				} else {
-					$data       = explode( '|', $_COOKIE['link-order-data'] );
-					$order_data = array(
-						'link_order_id' => $data[0],
-						'login_token'   => $data[1],
-					);
-				}
-
-				$order_id = (int) $order_data['link_order_id'];
-				$token    = wc_clean( $order_data['login_token'] );
-
-				ob_start();
-
-				?>
-				<p class="form-row">
-					<input class="woocommerce-Input input-hidden" type="hidden" name="wc_pcr_link_order_id" id="wc_pcr_link_order_id" value="<?php echo esc_attr( $order_id ); ?>" />
-					<input class="woocommerce-Input input-hidden" type="hidden" name="wc_pcr_login_token" id="wc_pcr_login_token" value="<?php echo esc_attr( $token ); ?>" />
-				</p>
-				<?php
-
-				echo ob_get_clean();
+			if ( ! empty( $this->quick_form_prompt ) ) {
+				$order_id = (int) $this->quick_form_prompt['order_id'];
+				$token    = (string) $this->quick_form_prompt['token'];
+			} elseif ( isset( $_GET['link_order_id'], $_GET['login_token'] ) ) {
+				$order_id = absint( $_GET['link_order_id'] );
+				$token    = wc_clean( wp_unslash( $_GET['login_token'] ) );
+			} else {
+				return;
 			}
+
+			if ( ! $order_id || '' === $token ) {
+				return;
+			}
+
+			?>
+			<p class="form-row">
+				<input class="woocommerce-Input input-hidden" type="hidden" name="wc_pcr_link_order_id" id="wc_pcr_link_order_id" value="<?php echo esc_attr( $order_id ); ?>" />
+				<input class="woocommerce-Input input-hidden" type="hidden" name="wc_pcr_login_token" id="wc_pcr_login_token" value="<?php echo esc_attr( $token ); ?>" />
+			</p>
+			<?php
 		}
 
 
 		/**
-		 * Links previous orders upon customer login
+		 * Links the pending order upon customer login.
 		 *
 		 * @since 1.0.0
 		 *
@@ -394,39 +432,353 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 		 */
 		public function link_previous_orders( $username, $user ) {
 
-			// ensure all data is set
-			if ( ! isset( $_POST['wc_pcr_link_order_id'], $_POST['wc_pcr_login_token'] ) ) {
+			if ( ! $user instanceof WP_User ) {
 				return;
 			}
 
-			// Unset order data cookie if it exists
-			if ( isset( $_COOKIE['link-order-data'] ) ) {
-				unset( $_COOKIE['link-order-data'] );
-				setcookie( 'link-order-data', null, -1, COOKIEPATH, COOKIE_DOMAIN );
+			$linked = $this->process_pending_links( $user, true );
+
+			/*
+			 * Legacy path: a custom login template may post these fields directly
+			 * without ever having been through maybe_store_order_data(), so there is
+			 * no browser secret to check. Fall back to the order's own token.
+			 */
+			if ( ! $linked && isset( $_POST['wc_pcr_link_order_id'], $_POST['wc_pcr_login_token'] ) ) {
+				$order_id = absint( $_POST['wc_pcr_link_order_id'] );
+				$token    = wc_clean( wp_unslash( $_POST['wc_pcr_login_token'] ) );
+				$order    = wc_get_order( $order_id );
+
+				if ( ! $order instanceof WC_Order || ! $this->token_matches( $order, $token ) ) {
+					$this->add_notice( __( 'Error linking your previous order.', 'wc-pcr' ), 'error' );
+					return;
+				}
+
+				$this->link_order( $order, $user );
 			}
+		}
 
-			$order_id = (int) $_POST['wc_pcr_link_order_id'];
-			$token    = wc_clean( $_POST['wc_pcr_login_token'] );
-			$order    = wc_get_order( $order_id );
+		/**
+		 * Links the pending order after a password reset.
+		 *
+		 * WooCommerce authenticates the customer inside its reset handler via
+		 * wc_set_customer_auth_cookie(), which never fires `wp_login`. Without this
+		 * hook a customer who forgot their password would complete the entire
+		 * prompted flow and still end up with an unlinked order.
+		 *
+		 * Safe to run twice: WooCommerce 10.9+ fires both `after_password_reset` and
+		 * `woocommerce_customer_reset_password`, and linking clears its own state.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param \WP_User $user The user whose password was reset.
+		 */
+		public function link_after_password_reset( $user ) {
 
-			if ( ! $order instanceof WC_Order ) {
-				wc_add_notice( __( 'Error linking your previous order.', 'wc-pcr' ), 'error' );
+			if ( ! $user instanceof WP_User ) {
 				return;
 			}
 
-			$stored_token = $order->get_meta( '_wc_pcr_post_checkout_registration' );
+			$this->process_pending_links( $user, true );
+		}
 
-			// check the token in the URL with the order's stored token
-			if ( ! $stored_token || $token !== $stored_token ) {
-				wc_add_notice( __( 'Error linking your previous order.', 'wc-pcr' ), 'error' );
+		/**
+		 * Applies any pending link request left over from an earlier request.
+		 *
+		 * Covers authentication routes the plugin cannot hook directly: auto-login
+		 * plugins, social login, "set your password" links, or simply the customer
+		 * logging in from a second tab while the thank-you page is still open.
+		 *
+		 * @since 2.1.0
+		 */
+		public function maybe_link_pending_orders() {
+
+			if ( ! is_user_logged_in() || empty( $_COOKIE[ WC_PCR_Pending_Link::COOKIE ] ) ) {
 				return;
 			}
 
-			// We're clear! Link this order and previous ones to the account
-			wc_update_new_customer_past_orders( $user->ID );
+			$user = wp_get_current_user();
+
+			if ( ! $user instanceof WP_User || ! $user->ID ) {
+				return;
+			}
+
+			$this->process_pending_links( $user, false );
+		}
+
+		/**
+		 * Applies every pending link request this browser holds.
+		 *
+		 * Entries are dropped from the browser whether they succeed or fail
+		 * terminally, so a rejected request never retries on each subsequent page
+		 * load and the cookie cleans itself up.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param \WP_User $user     The authenticated user.
+		 * @param bool     $announce Whether to surface a notice for terminal failures.
+		 * @return int Number of orders linked.
+		 */
+		protected function process_pending_links( $user, $announce = false ) {
+
+			$pending = WC_PCR_Pending_Link::get_all();
+
+			if ( empty( $pending ) ) {
+				return 0;
+			}
+
+			$linked = 0;
+
+			foreach ( $pending as $order_id => $secret ) {
+
+				$order = wc_get_order( $order_id );
+
+				if ( $order instanceof WC_Order && WC_PCR_Pending_Link::verify( $order, $secret ) ) {
+					if ( $this->link_order( $order, $user, $announce ) ) {
+						++$linked;
+					}
+				} elseif ( $announce ) {
+					$this->add_notice( __( 'Error linking your previous order.', 'wc-pcr' ), 'error' );
+				}
+
+				WC_PCR_Pending_Link::remove( $order_id );
+			}
+
+			return $linked;
+		}
+
+		/**
+		 * Assigns a guest order to an account.
+		 *
+		 * Deliberately narrower than wc_update_new_customer_past_orders(), which
+		 * claims every unassigned order sharing the account email. The customer
+		 * asked to link one specific order and that is what the prompt promises,
+		 * so linking anything else would be a surprise — and on a large store that
+		 * unbounded query is expensive. Stores that want the old sweep can opt in
+		 * through `wc_pcr_link_all_past_orders`.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param \WC_Order $order    The order to link.
+		 * @param \WP_User  $user     The account to link it to.
+		 * @param bool      $announce Whether to surface a notice on terminal failure.
+		 * @return bool True when the order was linked by this call.
+		 */
+		protected function link_order( $order, $user, $announce = true ) {
+
+			$order_id = $order->get_id();
+
+			// Already ours, or already someone else's. Never reassign an owned order.
+			if ( 0 !== $order->get_customer_id() ) {
+				return false;
+			}
+
+			if ( in_array( $order_id, self::$linked_this_request, true ) ) {
+				return false;
+			}
+
+			/**
+			 * Filters whether the order's billing email must match the account email.
+			 *
+			 * The billing email is the only thing tying a guest order to a person, and
+			 * it is the same rule WooCommerce core applies. Relaxing this lets anyone
+			 * holding a link request attach the order — and its address and contents —
+			 * to an arbitrary account.
+			 *
+			 * @since 2.1.0
+			 *
+			 * @param bool      $required whether the emails must match
+			 * @param \WC_Order $order    the order being linked
+			 * @param \WP_User  $user     the account it would be linked to
+			 */
+			$require_email_match = apply_filters( 'wc_pcr_require_email_match', true, $order, $user );
+
+			if ( $require_email_match ) {
+				$order_email = strtolower( trim( (string) $order->get_billing_email() ) );
+				$user_email  = strtolower( trim( (string) $user->user_email ) );
+
+				if ( '' === $order_email || $order_email !== $user_email ) {
+					if ( $announce ) {
+						$this->add_notice( __( 'We could not link that order to your account because it was placed with a different email address.', 'wc-pcr' ), 'error' );
+					}
+					return false;
+				}
+			}
+
+			/**
+			 * Filters whether an order may be linked to an account.
+			 *
+			 * @since 2.1.0
+			 *
+			 * @param bool      $can_link whether linking is allowed
+			 * @param \WC_Order $order    the order being linked
+			 * @param \WP_User  $user     the account it would be linked to
+			 */
+			if ( ! apply_filters( 'wc_pcr_can_link_order', true, $order, $user ) ) {
+				return false;
+			}
+
+			$order->set_customer_id( $user->ID );
+
+			// One-shot: the token and the browser secret must not survive their use.
+			$order->delete_meta_data( self::TOKEN_META );
+			$order->delete_meta_data( self::TOKEN_EXPIRES_META );
+			WC_PCR_Pending_Link::forget_order_state( $order );
+
+			$order->update_meta_data( '_wc_pcr_order_linked', true );
+			$order->save();
+
+			self::$linked_this_request[] = $order_id;
+
+			// Mirror the housekeeping WooCommerce performs when it claims a past order.
+			if ( $order->has_downloadable_item() ) {
+				$data_store = WC_Data_Store::load( 'customer-download' );
+				$data_store->delete_by_order_id( $order_id );
+				wc_downloadable_product_permissions( $order_id, true );
+			}
+
+			$this->reset_customer_order_stats( $user->ID );
+
+			/** This action is documented in woocommerce/includes/wc-user-functions.php */
+			do_action( 'woocommerce_update_new_customer_past_order', $order_id, $user );
+
+			/**
+			 * Fires after a guest order has been linked to an existing account.
+			 *
+			 * @since 2.1.0
+			 *
+			 * @param \WC_Order $order the linked order
+			 * @param \WP_User  $user  the account it was linked to
+			 */
+			do_action( 'wc_pcr_order_linked', $order, $user );
+
+			/**
+			 * Filters whether to also claim every other guest order sharing the account email.
+			 *
+			 * This was the behaviour before 2.1.0. It is off by default because it
+			 * links orders the customer never asked about and runs an unbounded query.
+			 *
+			 * @since 2.1.0
+			 *
+			 * @param bool     $link_all whether to sweep remaining guest orders
+			 * @param \WP_User $user     the account being linked to
+			 */
+			if ( apply_filters( 'wc_pcr_link_all_past_orders', false, $user ) ) {
+				wc_update_new_customer_past_orders( $user->ID );
+			}
 
 			/* translators: Placeholders: %s - order number */
-			wc_add_notice( sprintf( __( 'Order #%s has been linked to your account!', 'wc-pcr' ), $order->get_order_number() ), 'success' );
+			$this->add_notice( sprintf( __( 'Order #%s has been linked to your account!', 'wc-pcr' ), $order->get_order_number() ), 'success' );
+
+			return true;
+		}
+
+		/**
+		 * Invalidates the cached order count and spend for a customer.
+		 *
+		 * Without this, My Account keeps showing the totals from before the order
+		 * was attached. WooCommerce signals "recount" by blanking the values rather
+		 * than deleting them.
+		 *
+		 * WooCommerce 9.0 moved these keys behind a site-specific suffix
+		 * (`wc_order_count_wp_prefix`) to make them multisite-aware, so both key
+		 * shapes are cleared. The suffix is derived the same way WooCommerce derives
+		 * it, since the helper that owns it lives in an `Internal` namespace and is
+		 * not part of the public API.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param int $user_id The customer's user ID.
+		 */
+		protected function reset_customer_order_stats( $user_id ) {
+
+			global $wpdb;
+
+			$suffix = '_' . rtrim( $wpdb->get_blog_prefix(), '_' );
+
+			foreach ( array( 'wc_order_count', 'wc_money_spent' ) as $key ) {
+				update_user_meta( $user_id, $key, '' );
+				update_user_meta( $user_id, $key . $suffix, '' );
+			}
+
+			delete_user_meta( $user_id, 'wc_last_order' );
+			delete_user_meta( $user_id, 'wc_last_order' . $suffix );
+		}
+
+		/**
+		 * Adds a WooCommerce notice when there is somewhere to put it.
+		 *
+		 * `after_password_reset` also fires on wp-login.php and on WP-CLI, where
+		 * there is no customer session. wc_add_notice() would discard the notice
+		 * and emit a _doing_it_wrong() warning into the response.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string $message The notice text.
+		 * @param string $type    The notice type.
+		 */
+		protected function add_notice( $message, $type = 'success' ) {
+
+			if ( ! function_exists( 'WC' ) || ! WC()->session ) {
+				return;
+			}
+
+			wc_add_notice( $message, $type );
+		}
+
+		/**
+		 * Returns the order's linking token, generating one if needed.
+		 *
+		 * Reusing a live token matters because the thank-you page can be rendered
+		 * many times: regenerating on every view would invalidate the link the
+		 * customer already has open in another tab or in their order email.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param \WC_Order $order The order to issue a token for.
+		 * @return string The token.
+		 */
+		protected function get_order_token( $order ) {
+
+			$token   = (string) $order->get_meta( self::TOKEN_META );
+			$expires = (int) $order->get_meta( self::TOKEN_EXPIRES_META );
+
+			if ( '' !== $token && ( ! $expires || $expires > time() ) ) {
+				return $token;
+			}
+
+			$token = wc_pcr_generate_random_token( 32 );
+
+			$order->update_meta_data( self::TOKEN_META, $token );
+			$order->update_meta_data( self::TOKEN_EXPIRES_META, time() + WC_PCR_Pending_Link::TTL );
+			$order->save_meta_data();
+
+			return $token;
+		}
+
+		/**
+		 * Validates a supplied token against the order's stored token.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param \WC_Order $order The order to check.
+		 * @param string    $token The token supplied by the request.
+		 * @return bool True when the token is valid and unexpired.
+		 */
+		protected function token_matches( $order, $token ) {
+
+			$stored = (string) $order->get_meta( self::TOKEN_META );
+
+			if ( '' === $stored || '' === $token ) {
+				return false;
+			}
+
+			$expires = (int) $order->get_meta( self::TOKEN_EXPIRES_META );
+
+			if ( $expires && $expires < time() ) {
+				return false;
+			}
+
+			return hash_equals( $stored, $token );
 		}
 
 		/**
@@ -471,18 +823,33 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 			}
 		}
 		/**
-		 * Store order id and login token as a cookie to be able to login page without URL query args
+		 * Registers a pending link request when the customer follows the prompt.
+		 *
+		 * The URL token is exchanged here, once, for a fresh single-use secret. That
+		 * keeps the order's long-lived token out of the browser and lets the request
+		 * survive however many redirects the customer's authentication takes.
 		 *
 		 * @since 1.0.1
 		 */
 		public function maybe_store_order_data() {
-			if ( ! isset( $_GET['link_order_id'] ) || ! isset( $_GET['login_token'] ) ) {
+			if ( ! isset( $_GET['link_order_id'], $_GET['login_token'] ) ) {
 				return;
 			}
 
 			$order_id = absint( $_GET['link_order_id'] );
-			$token    = wc_clean( $_GET['login_token'] );
-			setcookie( 'link-order-data', $order_id . '|' . $token, time() + ( 3600 * 6 ), COOKIEPATH, COOKIE_DOMAIN );
+			$token    = wc_clean( wp_unslash( $_GET['login_token'] ) );
+			$order    = $order_id ? wc_get_order( $order_id ) : false;
+
+			// Fail closed and silently: an invalid link must not be an oracle.
+			if ( ! $order instanceof WC_Order || 0 !== $order->get_customer_id() ) {
+				return;
+			}
+
+			if ( ! $this->token_matches( $order, $token ) ) {
+				return;
+			}
+
+			WC_PCR_Pending_Link::add( $order );
 		}
 
 
@@ -505,10 +872,8 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 				throw new Exception( __( 'This order does not exist; it may have been deleted. Please register manually.', 'wc-pcr' ) );
 			}
 
-			$stored_token = $order->get_meta( '_wc_pcr_post_checkout_registration' );
-
 			// check the token in the URL with the order's stored token
-			if ( ! $stored_token || $token !== $stored_token ) {
+			if ( ! $this->token_matches( $order, $token ) ) {
 				throw new Exception( __( 'Invalid registration link. Please register manually.', 'wc-pcr' ) );
 			}
 
@@ -558,9 +923,16 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 				add_user_to_blog( get_current_blog_id(), $user_id, 'customer' );
 			}
 
-			// link this order to the customer
+			// link this order to the customer, and retire the one-shot registration token
 			$order->set_customer_id( $user_id );
+			$order->delete_meta_data( self::TOKEN_META );
+			$order->delete_meta_data( self::TOKEN_EXPIRES_META );
+			WC_PCR_Pending_Link::forget_order_state( $order );
+			$order->update_meta_data( '_wc_pcr_order_linked', true );
 			$order->save();
+
+			self::$linked_this_request[] = $order->get_id();
+			WC_PCR_Pending_Link::remove( $order->get_id() );
 
 			// security note: don't link previous orders automatically here, as someone *could* checkout with another
 			// person's email and use this flow, gaining access to the previous purchase history. For privacy, we

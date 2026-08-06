@@ -1,9 +1,9 @@
 === One-Click Post Checkout Registration for WooCommerce ===
-Contributors: alikhallad
+Contributors: alikhallad, carticy
 Tags: woocommerce registration, post-checkout registration, woocommerce abandonment, woocommerce marketing, gutenberg block
 Requires at least: 6.5
-Tested up to: 6.7
-Stable tag: 2.0.0
+Tested up to: 7.2
+Stable tag: 2.1.0
 Requires PHP: 7.4
 WC requires at least: 8.2
 WC tested up to: 9.6
@@ -58,6 +58,14 @@ The plugin automatically displays on the default WooCommerce order confirmation 
 
 == Changelog ==
 
+= 2.1.0 =
+* Fixed: the order was not linked when the customer reset a forgotten password instead of logging in.
+* Fixed: the order is now linked as soon as the customer signs in, even if that happens on a later visit or in another tab.
+* Changed: only the order the customer asked to link is now linked, instead of every past guest order placed with the same email address. Use the `wc_pcr_link_all_past_orders` filter to restore the previous behaviour.
+* Added: the order's billing email must now match the account email before it can be linked. Use the `wc_pcr_require_email_match` filter to change this.
+* Added: `wc_pcr_can_link_order` filter and `wc_pcr_order_linked` action for developers.
+* Security: hardened the cookie used to remember a pending link, and made registration and linking links single-use with a six-hour expiry.
+
 = 2.0.0 =
 * Added Gutenberg block for manual placement on custom pages
 * Updated minimum requirements: WordPress 6.5+, WooCommerce 8.2+, PHP 7.4+
@@ -92,3 +100,8 @@ The plugin automatically displays on the default WooCommerce order confirmation 
 
 = 1.0.0 =
 * First release
+
+== Upgrade Notice ==
+
+= 2.1.0 =
+Fixes orders not being linked when a customer resets a forgotten password. Linking now applies only to the order the customer asked to link, and requires the order email to match the account email.

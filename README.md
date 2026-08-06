@@ -74,7 +74,28 @@ composer lint
 
 # PHP formatting
 composer format
+
+# PHP tests
+composer test
 ```
+
+### Hooks
+
+**Filters**
+
+| Filter | Default | Purpose |
+| --- | --- | --- |
+| `wc_pcr_require_email_match` | `true` | Require the order's billing email to match the account email before linking. |
+| `wc_pcr_can_link_order` | `true` | Allow or block linking for a given order and account. |
+| `wc_pcr_link_all_past_orders` | `false` | Also link every other guest order placed with the account email. |
+
+**Actions**
+
+| Action | Fired when |
+| --- | --- |
+| `wc_pcr_order_linked` | A guest order has been linked to an existing account. |
+| `wc_pcr_before_post_checkout_registration` | Before a new account is created from an order. |
+| `wc_pcr_after_post_checkout_registration` | After a new account is created from an order. |
 
 ### Project Structure
 
@@ -85,8 +106,10 @@ wc-post-checkout-registration/
 │   └── src/                       # Source files
 ├── includes/                      # Core PHP classes
 │   ├── class-wc-post-checkout-registration.php
+│   ├── class-wc-pcr-pending-link.php
 │   └── class-wc-pcr-blocks.php
-└── languages/                     # Translation files
+├── languages/                     # Translation files
+└── tests/                         # PHPUnit test suite
 ```
 
 ### Requirements
