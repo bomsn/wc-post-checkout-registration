@@ -49,6 +49,20 @@ class WC_Order {
 	public $downloadable = false;
 
 	/**
+	 * Order key.
+	 *
+	 * @var string
+	 */
+	public $order_key = 'wc_order_teststub';
+
+	/**
+	 * Creation date, or null when unknown.
+	 *
+	 * @var \DateTime|null
+	 */
+	public $date_created;
+
+	/**
 	 * Number of times save() was called.
 	 *
 	 * @var int
@@ -185,5 +199,23 @@ class WC_Order {
 	 */
 	public function has_downloadable_item() {
 		return $this->downloadable;
+	}
+
+	/**
+	 * Order key.
+	 *
+	 * @return string
+	 */
+	public function get_order_key() {
+		return $this->order_key;
+	}
+
+	/**
+	 * Creation date.
+	 *
+	 * @return \DateTime|null
+	 */
+	public function get_date_created() {
+		return $this->date_created;
 	}
 }

@@ -42,6 +42,20 @@ abstract class TestCase extends PHPUnitTestCase {
 	protected $wc;
 
 	/**
+	 * Stand-in for the customer session held by WC()->session.
+	 *
+	 * @var WcSessionStub
+	 */
+	protected $session;
+
+	/**
+	 * Option values served by the get_option() stub.
+	 *
+	 * @var array
+	 */
+	protected $options = array();
+
+	/**
 	 * User meta writes recorded during the test.
 	 *
 	 * Each entry is array( 'update'|'delete', user ID, meta key, value ).
@@ -63,6 +77,7 @@ abstract class TestCase extends PHPUnitTestCase {
 
 		$this->notices          = array();
 		$this->orders           = array();
+		$this->options          = array();
 		$this->user_meta_writes = array();
 
 		WC_Data_Store::$deleted_order_ids = array();
@@ -106,9 +121,17 @@ abstract class TestCase extends PHPUnitTestCase {
 		Functions\when( 'esc_attr' )->returnArg();
 		Functions\when( 'esc_html__' )->returnArg();
 		Functions\when( 'esc_html' )->returnArg();
+		Functions\when( 'esc_url' )->returnArg();
+
+		Functions\when( 'get_option' )->alias(
+			function ( $name, $fallback = false ) {
+				return array_key_exists( $name, $this->options ) ? $this->options[ $name ] : $fallback;
+			}
+		);
 
 		// A customer-facing request with a live WooCommerce session, by default.
-		$this->wc = (object) array( 'session' => new \stdClass() );
+		$this->session = new WcSessionStub();
+		$this->wc      = (object) array( 'session' => $this->session );
 
 		Functions\when( 'WC' )->alias(
 			function () {

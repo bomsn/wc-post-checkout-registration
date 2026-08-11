@@ -2,8 +2,8 @@
 Contributors: alikhallad, carticy
 Tags: woocommerce registration, post-checkout registration, woocommerce abandonment, woocommerce marketing, gutenberg block
 Requires at least: 6.5
-Tested up to: 7.2
-Stable tag: 2.1.0
+Tested up to: 7.0.3
+Stable tag: 2.1.1
 Requires PHP: 7.4
 WC requires at least: 8.2
 WC tested up to: 9.6
@@ -58,6 +58,12 @@ The plugin automatically displays on the default WooCommerce order confirmation 
 
 == Changelog ==
 
+= 2.1.1 =
+* Fixed: with automatic linking enabled, the order confirmation page showed a login form instead of the order the customer had just placed.
+* Fixed: using the quick login form to reset a forgotten password no longer loses the order.
+* Fixed: an order already belonging to an account is no longer offered for linking a second time.
+* Added: customers are now told that their order is linked to their account, with a link to log in. The message is editable under WooCommerce > Settings > Accounts & Privacy.
+
 = 2.1.0 =
 * Fixed: the order was not linked when the customer reset a forgotten password instead of logging in.
 * Fixed: the order is now linked as soon as the customer signs in, even if that happens on a later visit or in another tab.
@@ -102,6 +108,9 @@ The plugin automatically displays on the default WooCommerce order confirmation 
 * First release
 
 == Upgrade Notice ==
+
+= 2.1.1 =
+Fixes the order confirmation page showing a login form instead of the order when automatic linking is enabled.
 
 = 2.1.0 =
 Fixes orders not being linked when a customer resets a forgotten password. Linking now applies only to the order the customer asked to link, and requires the order email to match the account email.

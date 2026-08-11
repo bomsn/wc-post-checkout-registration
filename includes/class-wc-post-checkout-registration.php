@@ -7,7 +7,7 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 	class Run_WC_PCR {
 
 
-		public $version = '2.1.0';
+		public $version = '2.1.1';
 
 		/**
 		 * Order meta holding the order-specific registration/linking token.
@@ -89,12 +89,16 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 			if ( get_option( 'woocommerce_enable_post_checkout_registration', 'no' ) === 'yes' ) {
 				// maybe render the prompt on the "thank you" page
 				add_action( 'woocommerce_before_thankyou', array( $this, 'maybe_show_registration_notice' ), 10, 1 );
+				// keep the receipt readable for the shopper whose order we just linked
+				add_filter( 'woocommerce_order_received_verify_known_shoppers', array( $this, 'maybe_allow_linked_order_receipt' ) );
 			}
 
 			// if the registration link is clicked, validate and register the customer
 			add_action( 'template_redirect', array( $this, 'maybe_register_new_customer' ) );
 			// Store order ID and token so it's linked to the user account after login
 			add_action( 'template_redirect', array( $this, 'maybe_store_order_data' ) );
+			// Do the same for the login form rendered on the order received page itself
+			add_action( 'template_redirect', array( $this, 'maybe_store_quick_login_order' ) );
 
 			// add login form fields to indicate when we should link previous orders
 			add_action( 'woocommerce_login_form', array( $this, 'add_custom_tracking_fields' ) );
@@ -186,7 +190,7 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 					$updated_settings[] = array(
 						'title'    => __( 'Automatically link orders', 'wc-pcr' ),
 						'desc'     => __( 'Link orders to existing accounts automatically.', 'wc-pcr' ),
-						'desc_tip' => __( 'Automatically link orders to any existing account with the same order email. This option will override all the options below and will force the user to login to view their order.', 'wc-pcr' ),
+						'desc_tip' => __( 'Automatically link orders to any existing account with the same order email, without asking the customer to log in first. The customer is told their order was added to their account and can log in to view it.', 'wc-pcr' ),
 						'id'       => 'wc_pcr_auto_linking',
 						'default'  => 'no',
 						'type'     => 'checkbox',
@@ -208,6 +212,15 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 						'type'     => 'textarea',
 						'css'      => 'min-width: 50%; height: 75px;',
 						'default'  => $this->get_default_existing_account_msg(),
+					);
+
+					$updated_settings[] = array(
+						'title'    => __( 'Linked order message', 'wc-pcr' ),
+						'desc_tip' => __( 'Define the message that should appear when the order has been linked to the customer`s account automatically.', 'wc-pcr' ),
+						'id'       => 'wc_pcr_linked_account_msg',
+						'type'     => 'textarea',
+						'css'      => 'min-width: 50%; height: 75px;',
+						'default'  => $this->get_default_linked_account_msg(),
 					);
 
 					$updated_settings[] = array(
@@ -291,17 +304,23 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 					// Mark as displayed to prevent duplication
 					self::$notice_displayed = true;
 
-					$existing_user = get_user_by( 'email', $order->get_billing_email() );
+					$existing_user  = get_user_by( 'email', $order->get_billing_email() );
+					$already_linked = $order->get_customer_id() || $order->get_meta( '_wc_pcr_order_linked' );
 
-					if ( $existing_user && get_option( 'wc_pcr_auto_linking', 'no' ) === 'yes' && ! $order->get_meta( '_wc_pcr_order_linked' ) ) {
+					if ( $existing_user && get_option( 'wc_pcr_auto_linking', 'no' ) === 'yes' && ! $already_linked ) {
 						// If not already linked, link any non-assigned orders with the customer email to their account
 						wc_update_new_customer_past_orders( $existing_user->ID );
 						$order->update_meta_data( '_wc_pcr_order_linked', true );
 						$order->save_meta_data();
-						// Refresh the page
-						$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-						wp_safe_redirect( esc_url_raw( $current_url ) );
-						exit;
+
+						$already_linked = true;
+					}
+
+					if ( $already_linked ) {
+						if ( $existing_user ) {
+							// The order belongs to an account now, so tell the customer where it went.
+							echo $this->render_order_linked_prompt();
+						}
 					} else {
 						// do not use a nonce, favoring order-specific validation
 						// this way, a user can't just get a valid nonce, then change the order ID in the registration link
@@ -313,13 +332,6 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 							echo $message;
 
 							if ( $quick_login_form_enabled ) {
-								/*
-								 * The inline form logs in on this same page, so register the
-								 * pending request now. That also covers the customer who
-								 * detours through "Lost your password?" from here.
-								 */
-								WC_PCR_Pending_Link::add( $order );
-
 								$this->quick_form_prompt = array(
 									'order_id' => $order->get_id(),
 									'token'    => $token,
@@ -368,6 +380,22 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 		}
 
 		/**
+		 * Renders the notice shown when the order is already tied to an account.
+		 *
+		 * @since 2.1.1
+		 *
+		 * @return string the linked order message
+		 */
+		protected function render_order_linked_prompt() {
+
+			$message = get_option( 'wc_pcr_linked_account_msg', $this->get_default_linked_account_msg() );
+
+			$message .= ' <a class="button" href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '">' . esc_html__( 'Log in', 'wc-pcr' ) . '</a>';
+
+			return "<div class='woocommerce-info'>{$message}</div>";
+		}
+
+		/**
 		 * Renders the registration prompt on the thankyou page
 		 *
 		 * @since 1.0.0
@@ -390,6 +418,102 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 			$message .= ' <a class="button" href="' . esc_url( $url ) . '">' . esc_html__( 'Create Account', 'wc-pcr' ) . '</a>';
 
 			return "<div class='woocommerce-info'>{$message}</div>";
+		}
+
+		/**
+		 * Keeps the order received page readable for the customer who just paid.
+		 *
+		 * WooCommerce hides that page from anyone who is not signed in as the order's
+		 * customer, so linking an order takes the receipt away from the guest who
+		 * placed it. Unassigned orders are granted a grace period on the strength of
+		 * the checkout session; this applies the same allowance, on the same terms,
+		 * to an order the plugin has linked.
+		 *
+		 * @since 2.1.1
+		 *
+		 * @param bool $verify Whether WooCommerce requires a login.
+		 * @return bool
+		 */
+		public function maybe_allow_linked_order_receipt( $verify ) {
+
+			if ( ! $verify || is_user_logged_in() ) {
+				return $verify;
+			}
+
+			$order = $this->get_receipt_order();
+
+			if ( ! $order || ! $order->get_meta( '_wc_pcr_order_linked' ) ) {
+				return $verify;
+			}
+
+			$created = $order->get_date_created();
+
+			if ( ! $created ) {
+				return $verify;
+			}
+
+			/** This filter is documented in woocommerce/src/Internal/Utilities/Users.php */
+			$grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order, 'order-received' );
+
+			if ( time() - $created->getTimestamp() > $grace_period ) {
+				return $verify;
+			}
+
+			if ( ! $this->session_belongs_to_order( $order ) ) {
+				return $verify;
+			}
+
+			return false;
+		}
+
+		/**
+		 * Whether the checkout session identifies the visitor as the order's customer.
+		 *
+		 * @since 2.1.1
+		 *
+		 * @param \WC_Order $order The order to match against.
+		 * @return bool
+		 */
+		protected function session_belongs_to_order( $order ) {
+
+			if ( ! function_exists( 'WC' ) || ! WC()->session ) {
+				return false;
+			}
+
+			$customer = WC()->session->get( 'customer' );
+			$email    = is_array( $customer ) && isset( $customer['email'] ) ? $customer['email'] : '';
+
+			return '' !== $email && 0 === strcasecmp( $email, $order->get_billing_email() );
+		}
+
+		/**
+		 * Returns the order behind the current order received page.
+		 *
+		 * The order key is verified here as well as by WooCommerce, so that relaxing
+		 * the login requirement cannot be reached by guessing an order ID.
+		 *
+		 * @since 2.1.1
+		 *
+		 * @return \WC_Order|false
+		 */
+		protected function get_receipt_order() {
+
+			$order_id = absint( get_query_var( 'order-received' ) );
+
+			if ( ! $order_id ) {
+				return false;
+			}
+
+			$order = wc_get_order( $order_id );
+
+			if ( ! $order instanceof WC_Order ) {
+				return false;
+			}
+
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WooCommerce's own order key from the receipt URL.
+			$key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+
+			return '' !== $key && hash_equals( $order->get_order_key(), $key ) ? $order : false;
 		}
 
 		/**
@@ -852,6 +976,55 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 			WC_PCR_Pending_Link::add( $order );
 		}
 
+		/**
+		 * Registers a pending link for the quick login form.
+		 *
+		 * That form is rendered part way down the order received page, far too late
+		 * to set a cookie, so the request has to be registered while the headers are
+		 * still open. Without it the customer who reaches for "Lost your password?"
+		 * from the inline form would lose the link.
+		 *
+		 * @since 2.1.1
+		 */
+		public function maybe_store_quick_login_order() {
+
+			if ( ! $this->quick_login_form_is_offered() ) {
+				return;
+			}
+
+			$order = $this->get_receipt_order();
+
+			if ( ! $order || $order->get_customer_id() || $order->get_meta( '_wc_pcr_order_linked' ) ) {
+				return;
+			}
+
+			if ( ! get_user_by( 'email', $order->get_billing_email() ) ) {
+				return;
+			}
+
+			// Reloading the page should not cost a write, nor rotate a working secret.
+			if ( WC_PCR_Pending_Link::verify( $order, WC_PCR_Pending_Link::get( $order->get_id() ) ) ) {
+				return;
+			}
+
+			WC_PCR_Pending_Link::add( $order );
+		}
+
+		/**
+		 * Whether the settings put a login form on the order received page.
+		 *
+		 * @since 2.1.1
+		 *
+		 * @return bool
+		 */
+		protected function quick_login_form_is_offered() {
+
+			return ! is_user_logged_in()
+				&& 'yes' === get_option( 'woocommerce_enable_post_checkout_registration', 'no' )
+				&& 'yes' === get_option( 'wc_pcr_quick_form', 'no' )
+				&& 'yes' !== get_option( 'wc_pcr_auto_linking', 'no' );
+		}
+
 
 		/**
 		 * Validate the create account token for the order, and create a customer if valid.
@@ -1036,6 +1209,16 @@ if ( ! class_exists( 'Run_WC_PCR' ) ) {
 		 */
 		public function get_default_existing_account_msg() {
 			return __( 'Looks like you already have an account! You can link this order to it by clicking here to log in:', 'wc-pcr' );
+		}
+		/**
+		 * Default message shown once an order has been linked to an account.
+		 *
+		 * @since 2.1.1
+		 *
+		 * @return string
+		 */
+		public function get_default_linked_account_msg() {
+			return __( 'Looks like you already have an account! This order is linked to it, so you can log in any time to view it:', 'wc-pcr' );
 		}
 		/**
 		 * Retrieve the markup for registration notice
